@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - Dockerfile
+      - .dockerignore
       - docker-compose.yaml
       - requirements.txt
       - api.py
@@ -15,6 +16,7 @@ on:
       - CONTRIBUTING.md
       - .github/workflows/sensevoice-container.yml
       - tests/test_container_contract.py
+      - tests/test_docker_context.sh
       - tests/test_device_env.py
   push:
     branches:
@@ -23,6 +25,7 @@ on:
       - "v*"
     paths:
       - Dockerfile
+      - .dockerignore
       - docker-compose.yaml
       - requirements.txt
       - api.py
@@ -34,6 +37,7 @@ on:
       - CONTRIBUTING.md
       - .github/workflows/sensevoice-container.yml
       - tests/test_container_contract.py
+      - tests/test_docker_context.sh
       - tests/test_device_env.py
   workflow_dispatch:
 
@@ -50,6 +54,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Validate container contract
         run: python -m unittest tests.test_container_contract tests.test_device_env
 
@@ -58,7 +64,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: docker/setup-buildx-action@v3
+
+      - name: Verify Docker build context exclusions
+        run: bash tests/test_docker_context.sh
 
       - name: Log in to GitHub Container Registry
         if: github.event_name != 'pull_request'
